@@ -28,6 +28,10 @@ require('find-java-home')(function(err, home){
         )
       : '""'
     );
+
+    var buildPath = path.resolve(__dirname, './build/');
+    var targetPath = path.resolve(process.env.INIT_CWD, './javabridge');
+    fs.renameSync(buildPath, targetPath);
   }
 });
 

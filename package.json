@@ -29,7 +29,6 @@
     "async": "2.6.1",
     "find-java-home": "0.2.0",
     "glob": "7.1.2",
-    "install-jdk": "git://github.com/allengleyzer/install-jdk",
     "lodash": "4.17.10",
     "nan": "2.10.0"
   },
@@ -39,8 +38,9 @@
     "when": "3.7.8"
   },
   "scripts": {
+    "install": "node isBuildRequired.js && node-gyp rebuild || echo Skipping Java rebuild",
     "test": "node testRunner.js",
-    "postinstall": "node postInstall.js"
+    "postinstall": "node isBuildRequired.js && node postInstall.js || echo Skipping Java rebuild post install"
   },
   "main": "./index.js"
 }
