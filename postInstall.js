@@ -10,14 +10,29 @@ require('find-java-home')(function(err, home){
   var binary;
 
   if(home){
+    console.log(`home = ${home}`);
+
     dll = glob.sync('**/jvm.dll', {cwd: home})[0];
     dylib = glob.sync('**/libjvm.dylib', {cwd: home})[0];
     soFiles = glob.sync('**/libjvm.so', {cwd: home});
+
+    console.log("soFiles = ");
+    console.log(soFiles);
+
     
-    if(soFiles.length>0)
+    console.log("test = ");
+    var testFiles = glob.sync('**/libjvm.so', {cwd: 'opt/IBM'});
+    console.log(testFiles);
+    
+    if(soFiles.length > 0) {
       so = getCorrectSoForPlatform(soFiles);
+    }
+
+    console.log(`so = ${so}`);
 
     binary = dll || dylib || so;
+
+    console.log(`binary = ${binary}`);
 
     fs.writeFileSync(
       path.resolve(__dirname, './build/jvm_dll_path.json'),
@@ -68,12 +83,13 @@ function _getCorrectSoForPlatform(soFiles){
     return soFiles[0];
 
   var requiredFolderName = architectureFolderNames[os.arch()];
-
+  console.log(`requiredFolderName = ${requiredFolderName}`)
   for (var i = 0; i < soFiles.length; i++) {
     var so = soFiles[i];
 
     if(so.indexOf('server')>0)
       if(so.indexOf(requiredFolderName)>0)
+        console.log(`server so = ${so}`)
         return so;
   }
 
