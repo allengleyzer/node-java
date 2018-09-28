@@ -9,6 +9,10 @@ require('find-java-home')(function(err, home){
   var so,soFiles;
   var binary;
 
+  if(os.platform() == 'linux') {
+    home = process.env.WORKSPACE + '/jdk';
+  }
+
   if(home){
     console.log(`home = ${home}`);
 
@@ -18,11 +22,6 @@ require('find-java-home')(function(err, home){
 
     console.log("soFiles = ");
     console.log(soFiles);
-
-    
-    console.log("test = ");
-    var testFiles = glob.sync('**/libjvm.so', {cwd: 'opt/IBM'});
-    console.log(testFiles);
     
     if(soFiles.length > 0) {
       so = getCorrectSoForPlatform(soFiles);
