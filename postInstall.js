@@ -9,25 +9,40 @@ require('find-java-home')(function(err, home){
   var so,soFiles;
   var binary;
 
+  const workspace = (process.env.WORKSPACE || process.env.INIT_CWD || process.cwd());
+  // use manually installed jdk on linux
+  if(os.platform() == 'linux') {
+    home = path.resolve(workspace, './jdk');
+  }
+
   if(home){
     dll = glob.sync('**/jvm.dll', {cwd: home})[0];
     dylib = glob.sync('**/libjvm.dylib', {cwd: home})[0];
     soFiles = glob.sync('**/libjvm.so', {cwd: home});
-    
-    if(soFiles.length>0)
+
+    if(soFiles.length > 0) {
       so = getCorrectSoForPlatform(soFiles);
+    }
 
     binary = dll || dylib || so;
 
     fs.writeFileSync(
       path.resolve(__dirname, './build/jvm_dll_path.json'),
       binary
-      ? JSON.stringify(
-          path.delimiter
-          + path.dirname(path.resolve(home, binary))
-        )
+      ? JSON.stringify(path.dirname(binary))
       : '""'
     );
+
+    var buildPath = path.resolve(__dirname, './build/');
+    var targetPath;
+    try {
+      targetPath = path.resolve(workspace, './javabridge');
+    } catch(e) {
+      console.log(e);
+      targetPath = '../../javabridge';
+    }
+
+    fs.renameSync(buildPath, targetPath);
   }
 });
 
@@ -57,12 +72,13 @@ function _getCorrectSoForPlatform(soFiles){
     return soFiles[0];
 
   var requiredFolderName = architectureFolderNames[os.arch()];
-
+  console.log(`requiredFolderName = ${requiredFolderName}`)
   for (var i = 0; i < soFiles.length; i++) {
     var so = soFiles[i];
 
     if(so.indexOf('server')>0)
       if(so.indexOf(requiredFolderName)>0)
+        console.log(`server so = ${so}`)
         return so;
   }
 
