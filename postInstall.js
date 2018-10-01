@@ -3,6 +3,8 @@ var fs = require('fs');
 var path = require('path');
 var os = require('os');
 
+const platform = os.platform();
+
 require('find-java-home')(function(err, home){
   var dll;
   var dylib;
@@ -11,7 +13,7 @@ require('find-java-home')(function(err, home){
 
   const workspace = (process.env.WORKSPACE || process.env.INIT_CWD || process.cwd());
   // use manually installed jdk on linux
-  if(os.platform() == 'linux') {
+  if(platform == 'linux') {
     home = path.resolve(workspace, './jdk');
   }
 
@@ -26,10 +28,18 @@ require('find-java-home')(function(err, home){
 
     binary = dll || dylib || so;
 
+    let binaryPath;
+    // use relative path for linux, full path for other operating systems
+    if(platform == 'linux') {
+      binaryPath = path.dirname(binary);
+    } else {
+      binaryPath = path.dirname(path.resolve(home, binary));
+    }
+
     fs.writeFileSync(
       path.resolve(__dirname, './build/jvm_dll_path.json'),
       binary
-      ? JSON.stringify(path.dirname(binary))
+      ? JSON.stringify(binaryPath)
       : '""'
     );
 
@@ -68,7 +78,7 @@ function _getCorrectSoForPlatform(soFiles){
     'x64': 'amd64'
   };
 
-  if(os.platform() != 'sunos')
+  if(platform != 'sunos')
     return soFiles[0];
 
   var requiredFolderName = architectureFolderNames[os.arch()];
